@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import {
-  getBlockedBy,
-  getBlocks,
-  isTaskInDependencyCycle,
-} from '../domain/dependencies';
+import { getBlockedBy, isTaskInDependencyCycle } from '../domain/dependencies';
 import type { Project, TaskId } from '../domain/types';
 
 interface DependencyEditorProps {
@@ -17,27 +13,24 @@ const getTaskTitle = (project: Project, taskId: TaskId): string =>
   project.tasks[taskId]?.title ?? 'Deleted task';
 
 interface DependencyControlProps {
-  readonly label: 'Blocks' | 'Blocked by';
   readonly candidateTaskIds: readonly TaskId[];
   readonly project: Project;
   readonly onAdd: (taskId: TaskId) => void;
 }
 
 function DependencyControl({
-  label,
   candidateTaskIds,
   project,
   onAdd,
 }: DependencyControlProps): React.JSX.Element {
   const [candidateTaskId, setCandidateTaskId] = useState<TaskId | ''>('');
-  const isBlocksControl = label === 'Blocks';
 
   return (
     <div className="dependency-control">
       <label>
-        {label}
+        Blocked by
         <select
-          aria-label={label}
+          aria-label="Blocked by"
           className="dependency-control-select"
           value={candidateTaskId}
           onChange={(event) => {
@@ -62,7 +55,7 @@ function DependencyControl({
           }
         }}
       >
-        {isBlocksControl ? 'Add blocked task' : 'Add blocker'}
+        Add blocker
       </button>
     </div>
   );
@@ -72,7 +65,6 @@ interface DependencyListProps {
   readonly label: string;
   readonly taskIds: readonly TaskId[];
   readonly project: Project;
-  readonly relationship: 'blocking' | 'blocker';
   readonly onRemove: (taskId: TaskId) => void;
 }
 
@@ -80,7 +72,6 @@ function DependencyList({
   label,
   taskIds,
   project,
-  relationship,
   onRemove,
 }: DependencyListProps): React.JSX.Element | null {
   if (taskIds.length === 0) {
@@ -91,17 +82,13 @@ function DependencyList({
     <ul className="dependency-list" aria-label={label}>
       {taskIds.map((taskId) => {
         const title = getTaskTitle(project, taskId);
-        const removeLabel =
-          relationship === 'blocking'
-            ? `Remove blocking relationship with ${title}`
-            : `Remove blocker relationship with ${title}`;
 
         return (
           <li key={taskId}>
             <span>{title}</span>
             <button
               type="button"
-              aria-label={removeLabel}
+              aria-label={`Remove blocker relationship with ${title}`}
               onClick={() => {
                 onRemove(taskId);
               }}
@@ -121,17 +108,23 @@ export function DependencyEditor({
   onLink,
   onUnlink,
 }: DependencyEditorProps): React.JSX.Element {
-  const blockedTaskIds = getBlocks(project, selectedTaskId);
   const blockerTaskIds = getBlockedBy(project, selectedTaskId);
-  const blockedTaskIdSet = new Set(blockedTaskIds);
   const blockerTaskIdSet = new Set(blockerTaskIds);
   const taskIds = Object.keys(project.tasks) as TaskId[];
-  const blockedTaskCandidates = taskIds.filter(
-    (taskId) => taskId !== selectedTaskId && !blockedTaskIdSet.has(taskId),
-  );
-  const blockerTaskCandidates = taskIds.filter(
-    (taskId) => taskId !== selectedTaskId && !blockerTaskIdSet.has(taskId),
-  );
+  const blockerTaskCandidates = taskIds
+    .filter(
+      (taskId) => taskId !== selectedTaskId && !blockerTaskIdSet.has(taskId),
+    )
+    .sort((a, b) =>
+      getTaskTitle(project, a).localeCompare(
+        getTaskTitle(project, b),
+        undefined,
+        {
+          numeric: true,
+          sensitivity: 'base',
+        },
+      ),
+    );
   const selectedTaskIsInCycle = isTaskInDependencyCycle(
     project,
     selectedTaskId,
@@ -146,26 +139,7 @@ export function DependencyEditor({
         </p>
       ) : null}
       <DependencyControl
-        key={`${selectedTaskId}-blocks`}
-        label="Blocks"
-        candidateTaskIds={blockedTaskCandidates}
-        project={project}
-        onAdd={(blockedId) => {
-          onLink(selectedTaskId, blockedId);
-        }}
-      />
-      <DependencyList
-        label="Tasks blocked by this task"
-        taskIds={blockedTaskIds}
-        project={project}
-        relationship="blocking"
-        onRemove={(blockedId) => {
-          onUnlink(selectedTaskId, blockedId);
-        }}
-      />
-      <DependencyControl
         key={`${selectedTaskId}-blocked-by`}
-        label="Blocked by"
         candidateTaskIds={blockerTaskCandidates}
         project={project}
         onAdd={(blockerId) => {
@@ -176,7 +150,6 @@ export function DependencyEditor({
         label="Tasks blocking this task"
         taskIds={blockerTaskIds}
         project={project}
-        relationship="blocker"
         onRemove={(blockerId) => {
           onUnlink(blockerId, selectedTaskId);
         }}

@@ -42,26 +42,6 @@ const createProject = (dependencies: Project['dependencies'] = []): Project => {
 };
 
 describe('DependencyEditor', () => {
-  it('links the selected task as the blocker from the Blocks control', async () => {
-    const user = userEvent.setup();
-    const onLink = vi.fn();
-    const project = createProject();
-
-    render(
-      <DependencyEditor
-        project={project}
-        selectedTaskId={id('initiative')}
-        onLink={onLink}
-        onUnlink={vi.fn()}
-      />,
-    );
-
-    await user.selectOptions(screen.getByLabelText('Blocks'), id('epic'));
-    await user.click(screen.getByRole('button', { name: 'Add blocked task' }));
-
-    expect(onLink).toHaveBeenCalledWith(id('initiative'), id('epic'));
-  });
-
   it('links the chosen task as the blocker from the Blocked by control', async () => {
     const user = userEvent.setup();
     const onLink = vi.fn();
@@ -94,7 +74,7 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    await user.selectOptions(screen.getByLabelText('Blocks'), id('epic'));
+    await user.selectOptions(screen.getByLabelText('Blocked by'), id('epic'));
     rerender(
       <DependencyEditor
         project={project}
@@ -104,12 +84,11 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Blocks')).toHaveValue('');
+    expect(screen.getByLabelText('Blocked by')).toHaveValue('');
   });
 
-  it('excludes the selected task and existing blocker links from both controls', () => {
+  it('excludes the selected task and existing blocker links from the control', () => {
     const project = createProject([
-      { blockerId: id('initiative'), blockedId: id('epic') },
       { blockerId: id('story'), blockedId: id('initiative') },
     ]);
 
@@ -122,14 +101,50 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Blocks')).toHaveTextContent('Story');
-    expect(screen.getByLabelText('Blocks')).not.toHaveTextContent('Initiative');
-    expect(screen.getByLabelText('Blocks')).not.toHaveTextContent('Epic');
     expect(screen.getByLabelText('Blocked by')).toHaveTextContent('Epic');
     expect(screen.getByLabelText('Blocked by')).not.toHaveTextContent(
       'Initiative',
     );
     expect(screen.getByLabelText('Blocked by')).not.toHaveTextContent('Story');
+  });
+
+  it('sorts the Blocked by options alphanumerically, not by task order', () => {
+    const zebra = id('zebra');
+    const apple = id('apple');
+    const project: Project = {
+      format: 'project-planner/v1',
+      name: 'Sort check',
+      rootTaskIds: [id('initiative'), zebra, apple],
+      tasks: {
+        [id('initiative')]: {
+          id: id('initiative'),
+          title: 'Initiative',
+          parentId: null,
+          childIds: [],
+        },
+        [zebra]: { id: zebra, title: 'Zebra', parentId: null, childIds: [] },
+        [apple]: { id: apple, title: 'Apple', parentId: null, childIds: [] },
+      },
+      dependencies: [],
+    };
+
+    render(
+      <DependencyEditor
+        project={project}
+        selectedTaskId={id('initiative')}
+        onLink={vi.fn()}
+        onUnlink={vi.fn()}
+      />,
+    );
+
+    const options = screen
+      .getByLabelText('Blocked by')
+      .querySelectorAll('option');
+    const optionLabels = Array.from(options).map(
+      (option) => option.textContent,
+    );
+
+    expect(optionLabels).toEqual(['Choose a task', 'Apple', 'Zebra']);
   });
 
   it('marks dependency selectors for constrained layout sizing', () => {
@@ -142,9 +157,6 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Blocks')).toHaveClass(
-      'dependency-control-select',
-    );
     expect(screen.getByLabelText('Blocked by')).toHaveClass(
       'dependency-control-select',
     );
@@ -169,17 +181,11 @@ describe('DependencyEditor', () => {
 
     await user.click(
       screen.getByRole('button', {
-        name: 'Remove blocking relationship with Epic',
-      }),
-    );
-    await user.click(
-      screen.getByRole('button', {
         name: 'Remove blocker relationship with Story',
       }),
     );
 
-    expect(onUnlink).toHaveBeenNthCalledWith(1, id('initiative'), id('epic'));
-    expect(onUnlink).toHaveBeenNthCalledWith(2, id('story'), id('initiative'));
+    expect(onUnlink).toHaveBeenCalledWith(id('story'), id('initiative'));
   });
 
   it('warns when the selected task is part of a dependency cycle', () => {

@@ -666,13 +666,13 @@ describe('TreeGrid', () => {
     render(<TreeInspectorHarness />);
 
     fireEvent.click(screen.getByRole('treeitem', { name: 'Initiative' }));
-    fireEvent.change(screen.getByLabelText('Blocks'), {
+    fireEvent.change(screen.getByLabelText('Blocked by'), {
       target: { value: id('story') },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Add blocked task' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add blocker' }));
 
     expect(
-      screen.getByRole('list', { name: 'Tasks blocked by this task' }),
+      screen.getByRole('list', { name: 'Tasks blocking this task' }),
     ).toHaveTextContent('Story');
   });
 
