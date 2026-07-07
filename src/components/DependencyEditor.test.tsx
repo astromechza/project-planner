@@ -92,7 +92,7 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    await user.selectOptions(screen.getByLabelText('Blocked by'), id('epic'));
+    await user.type(screen.getByLabelText('Blocked by'), 'Epic');
     await user.click(screen.getByRole('button', { name: 'Add blocker' }));
 
     expect(onLink).toHaveBeenCalledWith(id('epic'), id('initiative'));
@@ -110,7 +110,7 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    await user.selectOptions(screen.getByLabelText('Blocked by'), id('epic'));
+    await user.type(screen.getByLabelText('Blocked by'), 'Epic');
     rerender(
       <DependencyEditor
         project={project}
@@ -137,11 +137,11 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Blocked by')).toHaveTextContent('Epic');
-    expect(screen.getByLabelText('Blocked by')).not.toHaveTextContent(
-      'Initiative',
-    );
-    expect(screen.getByLabelText('Blocked by')).not.toHaveTextContent('Story');
+    const optionValues = Array.from(
+      document.querySelectorAll('datalist option'),
+    ).map((option) => option.getAttribute('value'));
+
+    expect(optionValues).toEqual(['Epic']);
   });
 
   it('sorts the Blocked by options alphanumerically, not by task order', () => {
@@ -173,14 +173,11 @@ describe('DependencyEditor', () => {
       />,
     );
 
-    const options = screen
-      .getByLabelText('Blocked by')
-      .querySelectorAll('option');
-    const optionLabels = Array.from(options).map(
-      (option) => option.textContent,
-    );
+    const optionValues = Array.from(
+      document.querySelectorAll('datalist option'),
+    ).map((option) => option.getAttribute('value'));
 
-    expect(optionLabels).toEqual(['Choose a task', 'Apple', 'Zebra']);
+    expect(optionValues).toEqual(['Apple', 'Zebra']);
   });
 
   it('marks dependency selectors for constrained layout sizing', () => {
