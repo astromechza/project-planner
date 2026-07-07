@@ -78,6 +78,37 @@ describe('DependencyEditor', () => {
     expect(optionValues).toEqual(['Same', 'Same (2)']);
   });
 
+  it('keeps Add blocker disabled for empty input when a candidate has an empty title', () => {
+    const empty = id('empty');
+    const project: Project = {
+      format: 'project-planner/v1',
+      name: 'Empty title check',
+      rootTaskIds: [id('initiative'), empty],
+      tasks: {
+        [id('initiative')]: {
+          id: id('initiative'),
+          title: 'Initiative',
+          parentId: null,
+          childIds: [],
+        },
+        [empty]: { id: empty, title: '', parentId: null, childIds: [] },
+      },
+      dependencies: [],
+    };
+
+    render(
+      <DependencyEditor
+        project={project}
+        selectedTaskId={id('initiative')}
+        onLink={vi.fn()}
+        onUnlink={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText('Blocked by')).toHaveValue('');
+    expect(screen.getByRole('button', { name: 'Add blocker' })).toBeDisabled();
+  });
+
   it('links the chosen task as the blocker from the Blocked by control', async () => {
     const user = userEvent.setup();
     const onLink = vi.fn();
