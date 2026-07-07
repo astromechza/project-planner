@@ -42,6 +42,42 @@ const createProject = (dependencies: Project['dependencies'] = []): Project => {
 };
 
 describe('DependencyEditor', () => {
+  it('disambiguates duplicate candidate titles in the blocker options', () => {
+    const dupA = id('dup-a');
+    const dupB = id('dup-b');
+    const project: Project = {
+      format: 'project-planner/v1',
+      name: 'Dup check',
+      rootTaskIds: [id('initiative'), dupA, dupB],
+      tasks: {
+        [id('initiative')]: {
+          id: id('initiative'),
+          title: 'Initiative',
+          parentId: null,
+          childIds: [],
+        },
+        [dupA]: { id: dupA, title: 'Same', parentId: null, childIds: [] },
+        [dupB]: { id: dupB, title: 'Same', parentId: null, childIds: [] },
+      },
+      dependencies: [],
+    };
+
+    const { container } = render(
+      <DependencyEditor
+        project={project}
+        selectedTaskId={id('initiative')}
+        onLink={vi.fn()}
+        onUnlink={vi.fn()}
+      />,
+    );
+
+    const optionValues = Array.from(
+      container.querySelectorAll('datalist option'),
+    ).map((option) => option.getAttribute('value'));
+
+    expect(optionValues).toEqual(['Same', 'Same (2)']);
+  });
+
   it('links the chosen task as the blocker from the Blocked by control', async () => {
     const user = userEvent.setup();
     const onLink = vi.fn();
