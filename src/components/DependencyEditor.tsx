@@ -34,7 +34,7 @@ function buildCandidateOptions(
     const priorCount = usedCounts.get(title) ?? 0;
     usedCounts.set(title, priorCount + 1);
     const displayText =
-      priorCount === 0 ? title : `${title} (${priorCount + 1})`;
+      priorCount === 0 ? title : `${title} (${String(priorCount + 1)})`;
 
     return { taskId, displayText };
   });
