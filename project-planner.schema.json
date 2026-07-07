@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Project Planner export file",
+  "description": "A project-planner/v1 plan: a forest of hierarchical tasks plus blocking dependencies between them. This schema validates structural shape; the application's parser enforces the additional integrity rules called out in each description.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "name", "rootTaskIds", "tasks", "dependencies"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL of this schema document. Emitted as the first key so tools and AI agents can discover the contract; it points at the schema hosted by the site the file was exported from."
+    },
+    "format": {
+      "const": "project-planner/v1",
+      "description": "Format identifier and version tag. Must be exactly \"project-planner/v1\"; any other value is an unsupported format and must be rejected."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable plan name."
+    },
+    "rootTaskIds": {
+      "type": "array",
+      "description": "Ordered ids of the top-level tasks. Every id must exist in `tasks` and reference a task whose parentId is null. Conversely, every task with parentId null must appear here exactly once. Ids are unique within this array.",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "tasks": {
+      "type": "object",
+      "description": "Map of task id to task. Each entry's key must equal the task's `id`, and keys must not be \"__proto__\", \"prototype\", or \"constructor\". The parent/child hierarchy formed by parentId and childIds must be internally consistent, acyclic, and no deeper than 5 levels (Initiative > Epic > Story > Task > Subtask).",
+      "additionalProperties": { "$ref": "#/$defs/task" }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Blocking edges between tasks. For each edge, blockerId and blockedId must reference existing tasks, must differ (no self-dependency), and the same (blockerId, blockedId) pair must not appear more than once.",
+      "items": { "$ref": "#/$defs/dependency" }
+    }
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "parentId", "childIds"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique task id. Must equal the key under which this task is stored in `tasks`, and must not be \"__proto__\", \"prototype\", or \"constructor\"."
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable task title."
+        },
+        "parentId": {
+          "type": ["string", "null"],
+          "description": "Id of the parent task, or null for a root task. When non-null it must reference an existing task whose `childIds` includes this task's id; when null this task's id must appear in the top-level `rootTaskIds`."
+        },
+        "childIds": {
+          "type": "array",
+          "description": "Ordered ids of this task's direct children. Every referenced task must exist and have its `parentId` set to this task's id. Ids are unique within this array.",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional free-form notes for the task."
+        },
+        "storyPoints": {
+          "enum": [1, 3, 5, 7, 14],
+          "description": "Optional effort estimate. When present it must be one of the allowed values: 1, 3, 5, 7, or 14."
+        }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blockerId", "blockedId"],
+      "properties": {
+        "blockerId": {
+          "type": "string",
+          "description": "Id of the task that must be completed first. Must reference an existing task and differ from blockedId."
+        },
+        "blockedId": {
+          "type": "string",
+          "description": "Id of the task that is blocked until the blocker is done. Must reference an existing task and differ from blockerId."
+        }
+      }
+    }
+  }
+}
