@@ -50,7 +50,8 @@ function DependencyControl({
   const optionByText = new Map(
     options.map((option) => [option.displayText, option.taskId]),
   );
-  const selectedTaskId = optionByText.get(inputText);
+  const selectedTaskId =
+    inputText === '' ? undefined : optionByText.get(inputText);
   const listId = 'blocker-options';
 
   return (
