@@ -55,13 +55,6 @@ button:disabled {
   display: none;
 }
 
-.planner-file-action input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
 .planner-operation-error {
   margin: 0;
   padding: 0.75rem 1.5rem;
