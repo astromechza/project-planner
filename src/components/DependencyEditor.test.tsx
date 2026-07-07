@@ -185,6 +185,7 @@ describe('DependencyEditor', () => {
       }),
     );
 
+    expect(onUnlink).toHaveBeenCalledTimes(1);
     expect(onUnlink).toHaveBeenCalledWith(id('story'), id('initiative'));
   });
 
