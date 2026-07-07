@@ -78,6 +78,57 @@ describe('DependencyEditor', () => {
     expect(optionValues).toEqual(['Same', 'Same (2)']);
   });
 
+  it('keeps option values unique when a title already matches the suffix pattern', async () => {
+    const user = userEvent.setup();
+    const onLink = vi.fn();
+    const first = id('first-same');
+    const second = id('second-same');
+    const literal = id('literal-same-2');
+    const project: Project = {
+      format: 'project-planner/v1',
+      name: 'Collision check',
+      rootTaskIds: [id('initiative'), first, second, literal],
+      tasks: {
+        [id('initiative')]: {
+          id: id('initiative'),
+          title: 'Initiative',
+          parentId: null,
+          childIds: [],
+        },
+        [first]: { id: first, title: 'Same', parentId: null, childIds: [] },
+        [second]: { id: second, title: 'Same', parentId: null, childIds: [] },
+        [literal]: {
+          id: literal,
+          title: 'Same (2)',
+          parentId: null,
+          childIds: [],
+        },
+      },
+      dependencies: [],
+    };
+
+    render(
+      <DependencyEditor
+        project={project}
+        selectedTaskId={id('initiative')}
+        onLink={onLink}
+        onUnlink={vi.fn()}
+      />,
+    );
+
+    const optionValues = Array.from(
+      document.querySelectorAll('datalist option'),
+    ).map((option) => option.getAttribute('value'));
+
+    expect(optionValues).toEqual(['Same', 'Same (2)', 'Same (2) (2)']);
+    expect(new Set(optionValues).size).toBe(optionValues.length);
+
+    await user.type(screen.getByLabelText('Blocked by'), 'Same (2)');
+    await user.click(screen.getByRole('button', { name: 'Add blocker' }));
+
+    expect(onLink).toHaveBeenCalledWith(second, id('initiative'));
+  });
+
   it('keeps Add blocker disabled for empty input when a candidate has an empty title', () => {
     const empty = id('empty');
     const project: Project = {
