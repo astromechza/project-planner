@@ -667,7 +667,7 @@ describe('TreeGrid', () => {
 
     fireEvent.click(screen.getByRole('treeitem', { name: 'Initiative' }));
     fireEvent.change(screen.getByLabelText('Blocked by'), {
-      target: { value: id('story') },
+      target: { value: 'Story' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Add blocker' }));
 
