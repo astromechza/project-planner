@@ -18,40 +18,68 @@ interface DependencyControlProps {
   readonly onAdd: (taskId: TaskId) => void;
 }
 
+interface CandidateOption {
+  readonly taskId: TaskId;
+  readonly displayText: string;
+}
+
+function buildCandidateOptions(
+  candidateTaskIds: readonly TaskId[],
+  project: Project,
+): readonly CandidateOption[] {
+  const usedCounts = new Map<string, number>();
+
+  return candidateTaskIds.map((taskId) => {
+    const title = getTaskTitle(project, taskId);
+    const priorCount = usedCounts.get(title) ?? 0;
+    usedCounts.set(title, priorCount + 1);
+    const displayText =
+      priorCount === 0 ? title : `${title} (${priorCount + 1})`;
+
+    return { taskId, displayText };
+  });
+}
+
 function DependencyControl({
   candidateTaskIds,
   project,
   onAdd,
 }: DependencyControlProps): React.JSX.Element {
-  const [candidateTaskId, setCandidateTaskId] = useState<TaskId | ''>('');
+  const [inputText, setInputText] = useState('');
+  const options = buildCandidateOptions(candidateTaskIds, project);
+  const optionByText = new Map(
+    options.map((option) => [option.displayText, option.taskId]),
+  );
+  const selectedTaskId = optionByText.get(inputText);
+  const listId = 'blocker-options';
 
   return (
     <div className="dependency-control">
       <label>
         Blocked by
-        <select
+        <input
           aria-label="Blocked by"
           className="dependency-control-select"
-          value={candidateTaskId}
+          list={listId}
+          placeholder="Type to filter tasks"
+          value={inputText}
           onChange={(event) => {
-            setCandidateTaskId(event.currentTarget.value as TaskId);
+            setInputText(event.currentTarget.value);
           }}
-        >
-          <option value="">Choose a task</option>
-          {candidateTaskIds.map((taskId) => (
-            <option key={taskId} value={taskId}>
-              {getTaskTitle(project, taskId)}
-            </option>
-          ))}
-        </select>
+        />
       </label>
+      <datalist id={listId}>
+        {options.map((option) => (
+          <option key={option.taskId} value={option.displayText} />
+        ))}
+      </datalist>
       <button
         type="button"
-        disabled={candidateTaskId === ''}
+        disabled={selectedTaskId === undefined}
         onClick={() => {
-          if (candidateTaskId !== '') {
-            onAdd(candidateTaskId);
-            setCandidateTaskId('');
+          if (selectedTaskId !== undefined) {
+            onAdd(selectedTaskId);
+            setInputText('');
           }
         }}
       >
