@@ -4,4 +4,4 @@
  * `BASE_URL` always ends in a slash, so the filename is appended directly.
  */
 export const projectSchemaUrl = (): string =>
-  `${window.location.origin}${import.meta.env.BASE_URL}project-planner.schema.json`;
+  `${location.origin}${import.meta.env.BASE_URL}project-planner.schema.json`;

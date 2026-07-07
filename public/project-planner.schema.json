@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://astromechza.github.io/project-planner/project-planner.schema.json",
   "title": "Project Planner export file",
   "description": "A project-planner/v1 plan: a forest of hierarchical tasks plus blocking dependencies between them. This schema validates structural shape; the application's parser enforces the additional integrity rules called out in each description.",
   "type": "object",

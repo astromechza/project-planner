@@ -104,7 +104,7 @@ current origin. Round-trips cleanly. One test is added to assert import ignores
 
 ## Drift test
 
-New test (using `ajv` + `ajv-formats` as dev dependencies):
+New test (using `ajv` as a dev dependency):
 
 - Compile `public/project-planner.schema.json`.
 - Validate the existing example export object(s) from the current tests →
