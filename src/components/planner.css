@@ -513,9 +513,6 @@ button:disabled {
 
   .task-inspector {
     grid-column: auto;
-  }
-
-  .task-inspector {
     border-top: 1px solid #dfe1e6;
     border-left: 0;
     position: static;
