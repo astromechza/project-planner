@@ -216,4 +216,50 @@ describe('ProjectApp', () => {
 
     expect(screen.getByText('Need shortcuts? Press ?')).toBeInTheDocument();
   });
+
+  it('hides collapse and expand all until the plan has tasks', () => {
+    render(<ProjectApp />);
+
+    expect(
+      screen.queryByRole('button', { name: 'Collapse all' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Expand all' }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add initiative' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Collapse all' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Expand all' }),
+    ).toBeInTheDocument();
+  });
+
+  it('collapses and expands the whole tree with the header buttons', () => {
+    render(<ProjectApp />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add initiative' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add child' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Collapse Untitled initiative' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse all' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Expand Untitled initiative' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('treeitem', { name: 'Untitled task' }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand all' }));
+
+    expect(
+      screen.getByRole('treeitem', { name: 'Untitled task' }),
+    ).toBeInTheDocument();
+  });
 });

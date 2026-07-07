@@ -30,6 +30,14 @@ test('plans, recovers, exports, and imports a local project', async ({
   await expect(initiative).toHaveClass(/task-row--blocks-selected/);
   await expect(foundationEpic).toHaveAttribute('aria-selected', 'true');
 
+  await page.getByRole('button', { name: 'Collapse all' }).click();
+  await expect(foundationEpic).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Expand Launch Initiative' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Expand all' }).click();
+  await expect(foundationEpic).toBeVisible();
+
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export' }).click();
   const download = await downloadPromise;
