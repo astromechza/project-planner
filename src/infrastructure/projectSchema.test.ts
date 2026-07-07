@@ -1,12 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020';
 import { describe, expect, it } from 'vitest';
+import schema from '../../public/project-planner.schema.json';
 import { serializeProjectFile } from './projectFile';
 import type { Project, TaskId } from '../domain/types';
 
-const schemaPath = resolve(process.cwd(), 'public/project-planner.schema.json');
-const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
 const validate = new Ajv2020().compile(schema);
 
 const initiativeId = 'initiative-1' as TaskId;
@@ -54,7 +51,7 @@ describe('project-planner.schema.json', () => {
 
   it('rejects an invalid story point value', () => {
     const bad = exported() as {
-      tasks: Record<string, { storyPoints?: number }>;
+      tasks: Record<'epic-1', { storyPoints?: number }>;
     };
     bad.tasks['epic-1'].storyPoints = 2;
 
@@ -62,7 +59,7 @@ describe('project-planner.schema.json', () => {
   });
 
   it('rejects a task missing its title', () => {
-    const bad = exported() as { tasks: Record<string, { title?: string }> };
+    const bad = exported() as { tasks: Record<'epic-1', { title?: string }> };
     delete bad.tasks['epic-1'].title;
 
     expect(validate(bad)).toBe(false);
