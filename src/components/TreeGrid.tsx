@@ -221,7 +221,7 @@ export const TreeGrid = forwardRef<TreeGridHandle, TreeGridProps>(
           setCollapsedTaskIds(collectCollapsibleTaskIds(project));
         },
         expandAll: () => {
-          setCollapsedTaskIds(new Set());
+          setCollapsedTaskIds(new Set<TaskId>());
         },
       }),
       [project, selectedTaskId, onSelect],
