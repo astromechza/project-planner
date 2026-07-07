@@ -51,13 +51,8 @@ button:disabled {
   max-width: 50vw;
 }
 
-.planner-file-action {
-  position: relative;
-  overflow: hidden;
-  padding: 0.35rem 0.65rem;
-  border: 1px solid #dfe1e6;
-  border-radius: 0.2rem;
-  cursor: pointer;
+.planner-file-input {
+  display: none;
 }
 
 .planner-file-action input {
