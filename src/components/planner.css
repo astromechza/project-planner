@@ -330,6 +330,11 @@ button:disabled {
 
 .task-inspector {
   grid-column: 3;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .task-inspector label {
@@ -513,6 +518,9 @@ button:disabled {
   .task-inspector {
     border-top: 1px solid #dfe1e6;
     border-left: 0;
+    position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .shortcut-group li {
