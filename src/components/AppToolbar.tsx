@@ -2,6 +2,7 @@ import {
   parseProjectFile,
   serializeProjectFile,
 } from '../infrastructure/projectFile';
+import { projectSchemaUrl } from '../infrastructure/schemaUrl';
 import { useEffect, useRef, useState } from 'react';
 import type { Project } from '../domain/types';
 import type { ImportError } from '../app/projectReducer';
@@ -88,7 +89,7 @@ export function AppToolbar({
   };
 
   const handleExport = (): void => {
-    const file = new Blob([serializeProjectFile(project)], {
+    const file = new Blob([serializeProjectFile(project, projectSchemaUrl())], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(file);

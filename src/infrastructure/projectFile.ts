@@ -262,9 +262,13 @@ export const parseProjectFile = (
   };
 };
 
-export const serializeProjectFile = (project: Project): string =>
+export const serializeProjectFile = (
+  project: Project,
+  schemaUrl: string,
+): string =>
   JSON.stringify(
     {
+      $schema: schemaUrl,
       format: project.format,
       name: project.name,
       rootTaskIds: project.rootTaskIds,

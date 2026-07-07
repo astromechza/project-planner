@@ -27,15 +27,32 @@ const project: Project = {
   dependencies: [{ blockerId: initiativeId, blockedId: epicId }],
 };
 
+const schemaUrl = 'https://plans.example/project-planner.schema.json';
+
 describe('project files', () => {
-  it('round-trips a valid project', () => {
-    const serialized = serializeProjectFile(project);
+  it('round-trips a valid project and ignores the schema hint', () => {
+    const serialized = serializeProjectFile(project, schemaUrl);
 
     expect(parseProjectFile(serialized)).toEqual({ ok: true, value: project });
   });
 
-  it('serializes projects deterministically in the documented field order', () => {
-    expect(serializeProjectFile(project)).toBe(`{
+  it('ignores a $schema key on import', () => {
+    const withSchema = JSON.stringify({
+      $schema: 'https://elsewhere.example/some.schema.json',
+      ...project,
+    });
+
+    const result = parseProjectFile(withSchema);
+
+    expect(result).toEqual({ ok: true, value: project });
+    if (result.ok) {
+      expect('$schema' in result.value).toBe(false);
+    }
+  });
+
+  it('serializes projects deterministically with $schema first', () => {
+    expect(serializeProjectFile(project, schemaUrl)).toBe(`{
+  "$schema": "https://plans.example/project-planner.schema.json",
   "format": "project-planner/v1",
   "name": "Health Hub plan",
   "rootTaskIds": [
@@ -150,11 +167,13 @@ describe('project files', () => {
       },
     };
 
-    expect(parseProjectFile(serializeProjectFile(projectWithPoints))).toEqual({
+    expect(
+      parseProjectFile(serializeProjectFile(projectWithPoints, schemaUrl)),
+    ).toEqual({
       ok: true,
       value: projectWithPoints,
     });
-    expect(parseProjectFile(serializeProjectFile(project))).toEqual({
+    expect(parseProjectFile(serializeProjectFile(project, schemaUrl))).toEqual({
       ok: true,
       value: project,
     });
