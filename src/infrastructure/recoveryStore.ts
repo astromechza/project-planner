@@ -1,4 +1,5 @@
 import { parseProjectFile, serializeProjectFile } from './projectFile';
+import { projectSchemaUrl } from './schemaUrl';
 import type { Project } from '../domain/types';
 
 export const RECOVERY_STORAGE_KEY = 'project-planner/recovery/v1';
@@ -20,7 +21,7 @@ export const loadRecovery = (storage: Storage): Project | null => {
 };
 
 export const saveRecovery = (storage: Storage, project: Project): void => {
-  const serialized = serializeProjectFile(project);
+  const serialized = serializeProjectFile(project, projectSchemaUrl());
   try {
     storage.setItem(RECOVERY_STORAGE_KEY, serialized);
   } catch {
