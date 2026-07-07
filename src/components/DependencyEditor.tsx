@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { getBlockedBy, isTaskInDependencyCycle } from '../domain/dependencies';
 import type { Project, TaskId } from '../domain/types';
 
@@ -27,14 +27,17 @@ function buildCandidateOptions(
   candidateTaskIds: readonly TaskId[],
   project: Project,
 ): readonly CandidateOption[] {
-  const usedCounts = new Map<string, number>();
+  const usedTexts = new Set<string>();
 
   return candidateTaskIds.map((taskId) => {
     const title = getTaskTitle(project, taskId);
-    const priorCount = usedCounts.get(title) ?? 0;
-    usedCounts.set(title, priorCount + 1);
-    const displayText =
-      priorCount === 0 ? title : `${title} (${String(priorCount + 1)})`;
+    let displayText = title;
+    let suffix = 2;
+    while (usedTexts.has(displayText)) {
+      displayText = `${title} (${String(suffix)})`;
+      suffix += 1;
+    }
+    usedTexts.add(displayText);
 
     return { taskId, displayText };
   });
@@ -46,13 +49,13 @@ function DependencyControl({
   onAdd,
 }: DependencyControlProps): React.JSX.Element {
   const [inputText, setInputText] = useState('');
+  const listId = useId();
   const options = buildCandidateOptions(candidateTaskIds, project);
   const optionByText = new Map(
     options.map((option) => [option.displayText, option.taskId]),
   );
   const selectedTaskId =
     inputText === '' ? undefined : optionByText.get(inputText);
-  const listId = 'blocker-options';
 
   return (
     <div className="dependency-control">
