@@ -30,6 +30,7 @@ export function AppToolbar({
   const [editingPlanName, setEditingPlanName] = useState(false);
   const [draftPlanName, setDraftPlanName] = useState(project.name);
   const planTitleInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editingPlanName) {
@@ -130,17 +131,24 @@ export function AppToolbar({
         <button type="button" onClick={handleNewPlan}>
           New plan
         </button>
-        <label className="planner-file-action">
+        <button
+          type="button"
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+        >
           Import
-          <input
-            aria-label="Import project file"
-            type="file"
-            accept="application/json,.json"
-            onChange={(event) => {
-              void handleImport(event);
-            }}
-          />
-        </label>
+        </button>
+        <input
+          ref={fileInputRef}
+          className="planner-file-input"
+          aria-label="Import project file"
+          type="file"
+          accept="application/json,.json"
+          onChange={(event) => {
+            void handleImport(event);
+          }}
+        />
         <button type="button" onClick={handleExport}>
           Export
         </button>
