@@ -2,7 +2,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { AppToolbar } from '../components/AppToolbar';
 import { KeyboardShortcutsDialog } from '../components/KeyboardShortcutsDialog';
 import { TaskInspector } from '../components/TaskInspector';
-import { TreeGrid } from '../components/TreeGrid';
+import { TreeGrid, type TreeGridHandle } from '../components/TreeGrid';
 import { WorkspaceSplitter } from '../components/WorkspaceSplitter';
 import { createEmptyProject } from '../domain/project';
 import { loadRecovery, saveRecovery } from '../infrastructure/recoveryStore';
@@ -44,6 +44,7 @@ export function ProjectApp(): React.JSX.Element {
     loadInitialState,
   );
   const hasSavedInitialProject = useRef(false);
+  const treeGridRef = useRef<TreeGridHandle>(null);
   const shortcutsOpenerRef = useRef<HTMLElement | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [inspectorWidth, setInspectorWidth] = useState(defaultInspectorWidth);
@@ -128,9 +129,29 @@ export function ProjectApp(): React.JSX.Element {
               <span className="planner-shortcut-hint">
                 Need shortcuts? Press ?
               </span>
-            ) : null}
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    treeGridRef.current?.collapseAll();
+                  }}
+                >
+                  Collapse all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    treeGridRef.current?.expandAll();
+                  }}
+                >
+                  Expand all
+                </button>
+              </>
+            )}
           </div>
           <TreeGrid
+            ref={treeGridRef}
             project={state.project}
             selectedTaskId={state.selectedTaskId}
             onSelect={(taskId) => {
